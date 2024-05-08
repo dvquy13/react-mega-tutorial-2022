@@ -3,6 +3,7 @@ import { Spinner } from "react-bootstrap";
 import Post from "./Post";
 import More from "./More";
 import { useApi } from "../contexts/ApiProvider";
+import { useCallback } from "react";
 
 export default function Posts({ content }) {
   const [posts, setPosts] = useState();
@@ -39,19 +40,25 @@ export default function Posts({ content }) {
     // A common mistake is to forget to include the second argument. This is interpreted by React as instructions to run the side effect function every single time the component renders, which is rarely necessary.
   }, [api, url]);
 
-  const loadNextPage = async () => {
-    if (loading || pagination?.offset === undefined) return;
-    if (pagination.offset + pagination.count >= pagination.total) return;
-    setLoading(true);
-    const response = await api.get(url, {
-      offset: pagination.offset + pagination.count,
-    });
-    if (response.ok) {
-      setPosts([...posts, ...response.body.data]);
-      setPagination(response.body.pagination);
-    }
-    setLoading(false);
-  };
+  // useCallback here because warned by the ESLint
+  // Docs say that it helps with optimizing rendering of functions
+  const loadNextPage = useCallback(
+    async () => {
+      if (loading || pagination?.offset === undefined) return;
+      if (pagination.offset + pagination.count >= pagination.total) return;
+      setLoading(true);
+      const response = await api.get(url, {
+        offset: pagination.offset + pagination.count,
+      });
+      if (response.ok) {
+        setPosts((posts) => [...posts, ...response.body.data]);
+        setPagination(response.body.pagination);
+      }
+      setLoading(false);
+    },
+    [api, loading, pagination, url]
+  );
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -64,16 +71,20 @@ export default function Posts({ content }) {
       { threshold: 1.0 } // Trigger only when the `More` button is fully visible
     );
 
-    if (moreRef.current) {
-      observer.observe(moreRef.current);
+    // Create a variable to store the current ref to be able to access it later 
+    // since it might have been changed when the clean-up function gets call
+    const curRef = moreRef.current;
+
+    if (curRef) {
+      observer.observe(curRef);
     }
 
     return () => {
-      if (moreRef.current) {
-        observer.unobserve(moreRef.current);
+      if (curRef) {
+        observer.unobserve(curRef);
       }
     };
-  }, [moreRef.current, posts, pagination]);
+  }, [posts, pagination, loadNextPage]);
 
   return (
     <>
@@ -85,13 +96,9 @@ export default function Posts({ content }) {
             <p>Failed to load posts</p>
           ) : (
             <>
-              {posts.length === 0 ? (
-                <p>There are no blog posts.</p>
-              ) : (
-                posts.map((post) => <Post key={post.id} post={post} />)
-              )}
+              {posts.map((post) => <Post key={post.id} post={post} />)}
               {pagination && posts.length >= pagination.total ? (
-                  <p style={{ textAlign: "center", marginTop: "20px", marginBottom: "40px" }}>There are no more blog posts.</p>
+                  <p style={{ textAlign: "center", marginTop: "20px", marginBottom: "40px" }}>There are no more posts.</p>
                 ) : (
                 <div ref={moreRef}>
                   {loading ? (
