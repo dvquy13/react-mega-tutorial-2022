@@ -77,3 +77,8 @@ code {
   margin-bottom: 10px;
   text-align: center;
 }
+
+.CenterSpinner {
+  display: block;
+  margin: 0 auto;
+}

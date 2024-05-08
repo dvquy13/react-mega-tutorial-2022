@@ -41,6 +41,7 @@ export default function Posts({ content }) {
 
   const loadNextPage = async () => {
     if (loading || pagination?.offset === undefined) return;
+    if (pagination.offset + pagination.count >= pagination.total) return;
     setLoading(true);
     const response = await api.get(url, {
       offset: pagination.offset + pagination.count,
@@ -77,7 +78,7 @@ export default function Posts({ content }) {
   return (
     <>
       {posts === undefined ? (
-        <Spinner animation="border" />
+        <Spinner className="CenterSpinner" animation="border" />
       ) : (
         <>
           {posts === null ? (
@@ -89,13 +90,17 @@ export default function Posts({ content }) {
               ) : (
                 posts.map((post) => <Post key={post.id} post={post} />)
               )}
-              <div ref={moreRef}>
-                {loading ? (
-                  <Spinner animation="border" />
+              {pagination && posts.length >= pagination.total ? (
+                  <p style={{ textAlign: "center", marginTop: "20px", marginBottom: "40px" }}>There are no more blog posts.</p>
                 ) : (
-                  <More pagination={pagination} loadNextPage={loadNextPage} />
-                )}
-              </div>
+                <div ref={moreRef}>
+                  {loading ? (
+                    <Spinner className="CenterSpinner" animation="border" />
+                  ) : (
+                    <More pagination={pagination} loadNextPage={loadNextPage} />
+                  )}
+                </div>
+              )}
             </>
           )}
         </>
