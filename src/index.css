@@ -49,6 +49,14 @@ code {
   background-color: #def;
 }
 
+.Sidebar a, .dropdown-item, .dropdown-item.active {
+  color: #444;
+}
+
+.Sidebar .nav-item .active, .dropdown-item.active {
+  background-color: #def;
+}
+
 .Content {
   margin-top: 10px;
 }

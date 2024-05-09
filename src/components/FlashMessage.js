@@ -13,7 +13,8 @@ export default function FlashMessage() {
     // obtained from the flash context.
     <Collapse in={visible}>
       <div>
-        <Alert variant={flashMessage.type || 'info'} dismissible
+        {/* Without show=True then the alert will not be shown after manually dismissed */}
+        <Alert variant={flashMessage.type || 'info'} show={true} dismissible
           onClose={hideFlash}>
           {flashMessage.message}
         </Alert>

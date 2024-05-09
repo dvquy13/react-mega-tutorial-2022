@@ -6,6 +6,20 @@ export default class MicroblogApiClient {
   }
 
   async request(options) {
+    let response = await this.requestInternal(options);
+    if (response.status === 401 && options.url !== '/tokens') {
+      const refreshResponse = await this.put('/tokens', {
+        access_token: localStorage.getItem('accessToken'),
+      });
+      if (refreshResponse.ok) {
+        localStorage.setItem('accessToken', refreshResponse.body.access_token);
+        response = await this.requestInternal(options);
+      }
+    }
+    return response;
+  }
+
+  async requestInternal(options) {
     let query = new URLSearchParams(options.query || {}).toString();
     if (query !== '') {
       query = '?' + query;
@@ -17,8 +31,18 @@ export default class MicroblogApiClient {
         method: options.method,
         headers: {
           'Content-Type': 'application/json',
+          // You may be wondering why this code isn't checking that the access
+          // token is not null before including it in the request. The
+          // assumption is that if the client object doesn't have an access
+          // token, then a different Authorization header will be included in
+          // the options object passed by the caller, which overrides the
+          // Authorization header defined here.
+          'Authorization': 'Bearer ' + localStorage.getItem('accessToken'),
           ...options.headers,
         },
+        // credentials: 'include' here means that the request would contain the refresh_token in the secure cookie
+        // which is needed to refresh the access_token
+        credentials: options.url === '/tokens' ? 'include' : 'omit',
         body: options.body ? JSON.stringify(options.body) : null,
       });
     }
@@ -55,5 +79,27 @@ export default class MicroblogApiClient {
 
   async delete(url, options) {
     return this.request({method: 'DELETE', url, ...options});
+  }
+
+  async login(username, password) {
+    const response = await this.post('/tokens', null, {
+      headers: {
+        Authorization:  'Basic ' + btoa(username + ":" + password)
+      }
+    });
+    if (!response.ok) {
+      return response.status === 401 ? 'fail' : 'error';
+    }
+    localStorage.setItem('accessToken', response.body.access_token);
+    return 'ok';
+  }
+
+  async logout() {
+    await this.delete('/tokens');
+    localStorage.removeItem('accessToken');
+  }
+
+  isAuthenticated() {
+    return localStorage.getItem('accessToken') !== null;
   }
 }
