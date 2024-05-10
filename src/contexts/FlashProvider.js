@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 
 export const FlashContext = createContext();
 let flashTimer;
@@ -7,7 +7,11 @@ export default function FlashProvider({ children }) {
   const [flashMessage, setFlashMessage] = useState({});
   const [visible, setVisible] = useState(false);
 
-  const flash = (message, type, duration = 10) => {
+  const hideFlash = useCallback(() => {
+    setVisible(false);
+  }, []);
+
+  const flash = useCallback((message, type, duration = 10) => {
     // Check if there is an active flash timer
     if (flashTimer) {
       // Cancel the timer if there is one
@@ -28,11 +32,7 @@ export default function FlashProvider({ children }) {
       // the timer creation and display an alert that remains visible until the user closes it manually.
       flashTimer = setTimeout(hideFlash, duration * 1000);
     }
-  };
-
-  const hideFlash = () => {
-    setVisible(false);
-  };
+  }, [hideFlash]);
 
   return (
     <FlashContext.Provider value={{flash, hideFlash, flashMessage, visible}}>
