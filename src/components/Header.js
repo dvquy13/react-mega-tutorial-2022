@@ -27,6 +27,9 @@ export default function Header() {
                     <NavDropdown.Item as={NavLink} to={'/user/' + user.username}>
                       Profile
                     </NavDropdown.Item>
+                    <NavDropdown.Item as={NavLink} to="/password">
+                      Change Password
+                    </NavDropdown.Item>
                     <NavDropdown.Divider />
                     <NavDropdown.Item onClick={logout}>
                       Logout

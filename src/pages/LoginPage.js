@@ -69,6 +69,7 @@ export default function LoginPage() {
       </Form>
       <hr />
       <p>Don&apos;t have an account? <Link to="/register">Register here</Link>!</p>
+      <p>Forgot your password? You can <Link to="/reset-request">reset it</Link>.</p>
     </Body>
   );
 }

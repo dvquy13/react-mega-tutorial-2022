@@ -4,8 +4,9 @@ import Post from "./Post";
 import More from "./More";
 import { useApi } from "../contexts/ApiProvider";
 import { useCallback } from "react";
+import Write from "./Write";
 
-export default function Posts({ content }) {
+export default function Posts({ content, write }) {
   const [posts, setPosts] = useState();
   const [pagination, setPagination] = useState();
   const [loading, setLoading] = useState(false);
@@ -59,7 +60,6 @@ export default function Posts({ content }) {
     [api, loading, pagination, url]
   );
 
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -86,8 +86,13 @@ export default function Posts({ content }) {
     };
   }, [posts, pagination, loadNextPage]);
 
+  const showPost = (newPost) => {
+    setPosts([newPost, ...posts]);
+  };
+
   return (
     <>
+      {write && <Write showPost={showPost} />}
       {posts === undefined ? (
         <Spinner className="CenterSpinner" animation="border" />
       ) : (
