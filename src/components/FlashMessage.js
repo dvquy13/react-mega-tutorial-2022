@@ -15,7 +15,7 @@ export default function FlashMessage() {
       <div>
         {/* Without show=True then the alert will not be shown after manually dismissed */}
         <Alert variant={flashMessage.type || 'info'} show={true} dismissible
-          onClose={hideFlash}>
+          onClose={hideFlash} data-visible={visible}>
           {flashMessage.message}
         </Alert>
       </div>
